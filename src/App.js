@@ -102,6 +102,13 @@ function App() {
           <h1>
             vUSD PRICE IN USD
           </h1>
+
+          <h2>
+            vUSD PRICE = {generalPrice} USD*
+          </h2>
+          <h6>
+            * Composition of the price obtained from Pools and ShimmerSea pools and their weighting by their capitalizations.
+          </h6>
           <h6>
             Note: The reference with USD DOLLAR is made with the HARCODED Price of WSMR = 0.05 USD
           </h6>
