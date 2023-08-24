@@ -113,6 +113,11 @@ function App() {
             vUSD Price = {pools.length > 0 ? pools[0].price : <p>Loading Price</p>} USD
           </h4>
           <h6>
+            Pool Capitalization in USD: {pools.length > 0 ? pools[0].capitalization : <p>Loading Cap</p>} USD   -----  
+            Pool Dominance in Market: {pools.length > 0 ? pools[0].dominance : <p>Loading Dom</p>}%
+            <p>Pool Balances: [{pools.length > 0 ? pools[0].wsmrBalance : <p> </p>} wSMR, {pools.length > 0 ? pools[0].vusddBalance : <p> </p>} vUSD] </p>
+          </h6>
+          <h6>
             <a
               className="App-link"
               href="https://pools-frontend-v2-diss-nakama.vercel.app/pool/0xd04978fce521e644ebddaa1aabcad6d36b518d34000200000000000000000005"
@@ -129,6 +134,11 @@ function App() {
           <h4>
             vUSD Price = {pools.length > 0 ? pools[1].price : <p>Loading Price</p>} USD
           </h4>
+          <h6>
+            Pool Capitalization in USD: {pools.length > 0 ? pools[1].capitalization : <p>Loading Cap</p>} USD   -----  
+            Pool Dominance in Market: {pools.length > 0 ? pools[1].dominance : <p>Loading Dom</p>}%
+            <p>Pool Balances: [{pools.length > 0 ? pools[1].wsmrBalance : <p> </p>} wSMR, {pools.length > 0 ? pools[1].vusddBalance : <p> </p>} vUSD] </p>
+          </h6>
           <h6>
             <a
               className="App-link"
