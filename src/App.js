@@ -47,7 +47,8 @@ function App() {
       const poolsWsmrBalance = Number(ethers.formatUnits(String(poolRawInfo[1][0]), 18))
       const poolsVusddBalance = Number(ethers.formatUnits(String(poolRawInfo[1][1]), 18))
       let poolCotization = poolsWsmrBalance/poolsVusddBalance
-      const poolsPrice = (poolCotization * wsmrPrice).toFixed(5)
+      const poolsVusdPrice = poolCotization * wsmrPrice
+      const poolsCap = poolsWsmrBalance * wsmrPrice + poolsVusddBalance * poolsVusdPrice
 
 
       // Get price from ShimmerSea
@@ -56,10 +57,34 @@ function App() {
       const sseaWsmrBalance = Number(ethers.formatUnits(String(poolRawInfo[0]), 18))
       const sseaVusddBalance = Number(ethers.formatUnits(String(poolRawInfo[1]), 18))
       poolCotization = sseaWsmrBalance/sseaVusddBalance
-      const sseaPrice = (poolCotization * wsmrPrice).toFixed(5)
+      const sseaVusdPrice = poolCotization * wsmrPrice
+      const sseaCap = sseaWsmrBalance * wsmrPrice + sseaVusddBalance * sseaVusdPrice
       
-      addPool(poolsPrice, poolsWsmrBalance, poolsVusddBalance, 300, 10)
-      addPool(sseaPrice, sseaWsmrBalance, sseaVusddBalance, 400, 20)
+      // Dominance calculation
+      const marketCap = poolsCap + sseaCap
+      const poolsDominance = poolsCap /marketCap * 100
+      const sseaDominance = sseaCap /marketCap * 100
+
+      console.log("poolsCap: " + poolsCap)
+      console.log("sseaCap: " + sseaCap)
+      console.log("marketCap: " + marketCap)
+      console.log("poolsDominance: " + poolsDominance)
+      console.log("sseaDominance: " + sseaDominance)
+
+      addPool(
+        poolsVusdPrice.toFixed(5), 
+        poolsWsmrBalance.toFixed(0), 
+        poolsVusddBalance.toFixed(0), 
+        poolsCap.toFixed(0), 
+        poolsDominance.toFixed(2)
+      )
+      addPool(
+        sseaVusdPrice.toFixed(5), 
+        sseaWsmrBalance.toFixed(0), 
+        sseaVusddBalance.toFixed(0), 
+        sseaCap.toFixed(0), 
+        sseaDominance.toFixed(2)
+      )
       setPools(poolArray)
     }
     setPrices();
