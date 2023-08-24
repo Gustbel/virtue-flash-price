@@ -33,6 +33,9 @@ function addPool(price, wsmrBalance, vusddBalance, capitalization, dominance) {
 
 function App() {
   const [pools, setPools] = useState([]);
+  const [generalPrice, setGeneralPrice] = useState();
+  const [marketCap, setMarketCap] = useState();
+
 
   useEffect(() => {
     async function setPrices() {
@@ -62,30 +65,30 @@ function App() {
       
       // Dominance calculation
       const marketCap = poolsCap + sseaCap
-      const poolsDominance = poolsCap /marketCap * 100
-      const sseaDominance = sseaCap /marketCap * 100
+      const poolsDominance = poolsCap / marketCap
+      const sseaDominance = sseaCap /marketCap
 
-      console.log("poolsCap: " + poolsCap)
-      console.log("sseaCap: " + sseaCap)
-      console.log("marketCap: " + marketCap)
-      console.log("poolsDominance: " + poolsDominance)
-      console.log("sseaDominance: " + sseaDominance)
+      // Final Price
+      const ponderatedPrice = (poolsVusdPrice * poolsDominance) + (sseaVusdPrice * sseaDominance)
 
       addPool(
         poolsVusdPrice.toFixed(5), 
         poolsWsmrBalance.toFixed(0), 
         poolsVusddBalance.toFixed(0), 
         poolsCap.toFixed(0), 
-        poolsDominance.toFixed(2)
+        (poolsDominance * 100).toFixed(2)
       )
       addPool(
         sseaVusdPrice.toFixed(5), 
         sseaWsmrBalance.toFixed(0), 
         sseaVusddBalance.toFixed(0), 
         sseaCap.toFixed(0), 
-        sseaDominance.toFixed(2)
+        (sseaDominance * 100).toFixed(2)
       )
       setPools(poolArray)
+
+      setGeneralPrice(ponderatedPrice.toFixed(5))
+      setMarketCap(marketCap.toFixed(0))
     }
     setPrices();
   }, []);
