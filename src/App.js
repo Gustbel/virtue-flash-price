@@ -1,4 +1,3 @@
-import logo from './logo.svg';
 import './App.css';
 import {useEffect, useState} from 'react';
 import { ethers, JsonRpcProvider, utils } from 'ethers';
@@ -14,33 +13,55 @@ const poolId = "0xd04978fce521e644ebddaa1aabcad6d36b518d340002000000000000000000
 // SHIMMERSEA
 const shimmerSeaPoolAddress = "0x4e924F6a6AC5452D6E1cB08818Fb103Fd0328eb0"
 
+// Object definition
+function Pool(price, wsmrBalance, vusddBalance, capitalization, dominance) {
+  this.price = price;
+  this.wsmrBalance = wsmrBalance;
+  this.vusddBalance = vusddBalance;
+  this.capitalization = capitalization;
+  this.dominance = dominance;
+}
+
+var poolArray = [];
+
+// Function to add a new instance of XYZ to the array
+function addPool(price, wsmrBalance, vusddBalance, capitalization, dominance) {
+  var newPool = new Pool(price, wsmrBalance, vusddBalance, capitalization, dominance);
+  poolArray.push(newPool);
+}
+
+
 function App() {
-  const [pricePools, setPricePools] = useState(null);
-  const [priceShimmersea, setPriceShimmersea] = useState(null);
-  const [salida, setSalida] = useState(null);
+  const [pools, setPools] = useState([]);
 
   useEffect(() => {
     async function setPrices() {
       const provider = new JsonRpcProvider('https://json-rpc.evm.testnet.shimmer.network');
 
+      // Set Pool Array to empty
+      poolArray = [];
+
       // Get price from Pools
       const vault = new ethers.Contract(vaultAddress, vaultAbi, provider);
       let poolRawInfo = await vault.getPoolTokens(poolId);
-      let wsmrBalance = Number(ethers.formatUnits(String(poolRawInfo[1][0]), 18))
-      let vusddBalance = Number(ethers.formatUnits(String(poolRawInfo[1][1]), 18))
-      let poolCotization = wsmrBalance/vusddBalance
-      let price = poolCotization * wsmrPrice
-      setPricePools(price);
+      const poolsWsmrBalance = Number(ethers.formatUnits(String(poolRawInfo[1][0]), 18))
+      const poolsVusddBalance = Number(ethers.formatUnits(String(poolRawInfo[1][1]), 18))
+      let poolCotization = poolsWsmrBalance/poolsVusddBalance
+      const poolsPrice = (poolCotization * wsmrPrice).toFixed(5)
 
+
+      // Get price from ShimmerSea
       const shimmerSeaPool = new ethers.Contract(shimmerSeaPoolAddress, tangleseaPairAbi, provider);
       poolRawInfo = await shimmerSeaPool.getReserves()
-      wsmrBalance = Number(ethers.formatUnits(String(poolRawInfo[0]), 18))
-      vusddBalance = Number(ethers.formatUnits(String(poolRawInfo[1]), 18))
-      poolCotization = wsmrBalance/vusddBalance
-      price = poolCotization * wsmrPrice
-      setPriceShimmersea(price);
+      const sseaWsmrBalance = Number(ethers.formatUnits(String(poolRawInfo[0]), 18))
+      const sseaVusddBalance = Number(ethers.formatUnits(String(poolRawInfo[1]), 18))
+      poolCotization = sseaWsmrBalance/sseaVusddBalance
+      const sseaPrice = (poolCotization * wsmrPrice).toFixed(5)
+      
+      addPool(poolsPrice, poolsWsmrBalance, poolsVusddBalance, 300, 10)
+      addPool(sseaPrice, sseaWsmrBalance, sseaVusddBalance, 400, 20)
+      setPools(poolArray)
     }
-
     setPrices();
   }, []);
 
@@ -61,7 +82,7 @@ function App() {
         <p>
             PRICE IN POOLS PLATFORM:
           <h4>
-            vUSD Price =  {pricePools}  USD
+            vUSD Price = {pools.length > 0 ? pools[0].price : <p>Loading Price</p>} USD
           </h4>
           <h6>
             <a
@@ -78,7 +99,7 @@ function App() {
         <p>
             PRICE IN POOLS SHIMMERSEA:
           <h4>
-            vUSD Price = {priceShimmersea}
+            vUSD Price = {pools.length > 0 ? pools[1].price : <p>Loading Price</p>} USD
           </h4>
           <h6>
             <a
