@@ -46,44 +46,58 @@ function App() {
 
       // Get price from Pools
       const vault = new ethers.Contract(vaultAddress, vaultAbi, provider);
-      let poolRawInfo = await vault.getPoolTokens(poolId);
-      const poolsWsmrBalance = Number(ethers.formatUnits(String(poolRawInfo[1][0]), 18))
-      const poolsVusddBalance = Number(ethers.formatUnits(String(poolRawInfo[1][1]), 18))
-      let poolCotization = poolsWsmrBalance/poolsVusddBalance
-      const poolsVusdPrice = poolCotization * wsmrPrice
-      const poolsCap = poolsWsmrBalance * wsmrPrice + poolsVusddBalance * poolsVusdPrice
+      const pool1PoolsRawInfo = await vault.getPoolTokens(poolId);
+      const pool1PoolsWsmrBalance = Number(ethers.formatUnits(String(pool1PoolsRawInfo[1][0]), 18))
+      const pool1PoolsVusdBalance = Number(ethers.formatUnits(String(pool1PoolsRawInfo[1][1]), 18))
+      let poolCotization = pool1PoolsWsmrBalance/pool1PoolsVusdBalance
+      const pool1PoolsVusdPrice = poolCotization * wsmrPrice
+      const pool1PoolsCap = pool1PoolsWsmrBalance * wsmrPrice + pool1PoolsVusdBalance * pool1PoolsVusdPrice
 
 
       // Get price from ShimmerSea
       const shimmerSeaPool = new ethers.Contract(shimmerSeaPoolAddress, tangleseaPairAbi, provider);
-      poolRawInfo = await shimmerSeaPool.getReserves()
-      const sseaWsmrBalance = Number(ethers.formatUnits(String(poolRawInfo[0]), 18))
-      const sseaVusddBalance = Number(ethers.formatUnits(String(poolRawInfo[1]), 18))
-      poolCotization = sseaWsmrBalance/sseaVusddBalance
-      const sseaVusdPrice = poolCotization * wsmrPrice
-      const sseaCap = sseaWsmrBalance * wsmrPrice + sseaVusddBalance * sseaVusdPrice
+      const pool1SseaRawInfo = await shimmerSeaPool.getReserves()
+      const pool1SseaWsmrBalance = Number(ethers.formatUnits(String(pool1SseaRawInfo[0]), 18))
+      const pool1SseaVusddBalance = Number(ethers.formatUnits(String(pool1SseaRawInfo[1]), 18))
+      poolCotization = pool1SseaWsmrBalance/pool1SseaVusddBalance
+      const pool1SseaVusdPrice = poolCotization * wsmrPrice
+      const pool1SseaCap = pool1SseaWsmrBalance * wsmrPrice + pool1SseaVusddBalance * pool1SseaVusdPrice
       
       // Dominance calculation
-      const marketCap = poolsCap + sseaCap
-      const poolsDominance = poolsCap / marketCap
-      const sseaDominance = sseaCap /marketCap
+      const marketCap = pool1PoolsCap + pool1SseaCap
+      const pool1PoolsDominance = pool1PoolsCap / marketCap
+      const pool1SseaDominance = pool1SseaCap /marketCap
 
       // Final Price
-      const ponderatedPrice = (poolsVusdPrice * poolsDominance) + (sseaVusdPrice * sseaDominance)
+      const ponderatedPrice = (pool1PoolsVusdPrice * pool1PoolsDominance) + (pool1SseaVusdPrice * pool1SseaDominance)
 
       addPool(
-        poolsVusdPrice.toFixed(5), 
-        poolsWsmrBalance.toFixed(0), 
-        poolsVusddBalance.toFixed(0), 
-        poolsCap.toFixed(0), 
-        (poolsDominance * 100).toFixed(2)
+        pool1PoolsVusdPrice.toFixed(5), 
+        pool1PoolsWsmrBalance.toFixed(0), 
+        pool1PoolsVusdBalance.toFixed(0), 
+        pool1PoolsCap.toFixed(0), 
+        (pool1PoolsDominance * 100).toFixed(2)
       )
       addPool(
-        sseaVusdPrice.toFixed(5), 
-        sseaWsmrBalance.toFixed(0), 
-        sseaVusddBalance.toFixed(0), 
-        sseaCap.toFixed(0), 
-        (sseaDominance * 100).toFixed(2)
+        (1.00).toFixed(5), 
+        (123).toFixed(0), 
+        (123).toFixed(0), 
+        (246).toFixed(0), 
+        (15).toFixed(2)
+      )
+      addPool(
+        pool1SseaVusdPrice.toFixed(5), 
+        pool1SseaWsmrBalance.toFixed(0), 
+        pool1SseaVusddBalance.toFixed(0), 
+        pool1SseaCap.toFixed(0), 
+        (pool1SseaDominance * 100).toFixed(2)
+      )
+      addPool(
+        (1.00).toFixed(5), 
+        (423).toFixed(0), 
+        (423).toFixed(0), 
+        (846).toFixed(0), 
+        (30).toFixed(2)
       )
       setPools(poolArray)
 
@@ -107,55 +121,125 @@ function App() {
             vUSD PRICE = {generalPrice} USD*
           </h2>
           <h6>
-            * Composition of the price obtained from Pools and ShimmerSea pools and their weighting by their capitalizations.
-          </h6>
-          <h6>
+            * Composition of the price obtained from Pools and ShimmerSea pools and their weighting by their capitalizations. <br></br> 
             Note: The reference with USD DOLLAR is made with the HARCODED Price of WSMR = 0.05 USD
           </h6>
         </p>
 
         <p>
             PRICE IN POOLS PLATFORM:
-          <h4>
-            vUSD Price = {pools.length > 0 ? pools[0].price : <p>Loading Price</p>} USD
-          </h4>
-          <h6>
-            Pool Capitalization in USD: {pools.length > 0 ? pools[0].capitalization : <p>Loading Cap</p>} USD   -----  
-            Pool Dominance in Market: {pools.length > 0 ? pools[0].dominance : <p>Loading Dom</p>}%
-            <p>Pool Balances: [{pools.length > 0 ? pools[0].wsmrBalance : <p> </p>} wSMR, {pools.length > 0 ? pools[0].vusddBalance : <p> </p>} vUSD] </p>
-          </h6>
-          <h6>
-            <a
-              className="App-link"
-              href="https://pools-frontend-v2-diss-nakama.vercel.app/pool/0xd04978fce521e644ebddaa1aabcad6d36b518d34000200000000000000000005"
-              target="_blank"
-              rel="wSMRv/VUSD Pool in POOLS"
-            >
-              wSMRv/VUSD Pool in POOLS
-            </a>
-          </h6>
+          <div class="container">
+            <div class="column">
+              <h4>
+              Pool1: wSMR/vUSD
+              </h4>
+            </div>
+            <div class="column">
+              <h3>
+              vUSD Price = {pools.length > 0 ? pools[0].price : <p>Loading Price</p>} USD
+              </h3>
+            </div>
+            <div class="column">
+              <h6>
+                <p> Pool Capitalization in USD: {pools.length > 0 ? pools[0].capitalization : <p>Loading Cap</p>} USD  </p>
+                <p> Pool Dominance in Market: {pools.length > 0 ? pools[0].dominance : <p>Loading Dom</p>}%  </p>
+                <p> Pool Balances: [{pools.length > 0 ? pools[0].wsmrBalance : <p> </p>} wSMR, {pools.length > 0 ? pools[0].vusddBalance : <p> </p>} vUSD] </p>
+                <a
+                  className="App-link"
+                  href="https://pools-frontend-v2-diss-nakama.vercel.app/pool/0xd04978fce521e644ebddaa1aabcad6d36b518d34000200000000000000000005"
+                  target="_blank"
+                  rel="wSMRv/VUSD Pool in POOLS"
+                >
+                  wSMRv/VUSD Pool in POOLS
+                </a>
+              </h6>
+            </div>
+          </div>
+          <div class="container">
+            <div class="column">
+              <h4>
+              Pool2: USDT/vUSD
+              </h4>
+            </div>
+            <div class="column">
+              <h3>
+              vUSD Price = {pools.length > 0 ? pools[1].price : <p>Loading Price</p>} USD
+              </h3>
+            </div>
+            <div class="column">
+              <h6>
+                <p> Pool Capitalization in USD: {pools.length > 0 ? pools[1].capitalization : <p>Loading Cap</p>} USD  </p>
+                <p> Pool Dominance in Market: {pools.length > 0 ? pools[1].dominance : <p>Loading Dom</p>}%  </p>
+                <p> Pool Balances: [{pools.length > 0 ? pools[1].wsmrBalance : <p> </p>} wSMR, {pools.length > 0 ? pools[1].vusddBalance : <p> </p>} vUSD] </p>
+                <a
+                  className="App-link"
+                  href="https://pools-frontend-v2-diss-nakama.vercel.app/pool/0xd04978fce521e644ebddaa1aabcad6d36b518d34000200000000000000000005"
+                  target="_blank"
+                  rel="USDT/VUSD Pool in POOLS"
+                >
+                  USDT/VUSD Pool in POOLS
+                </a>
+              </h6>
+            </div>
+          </div>
         </p>
 
         <p>
             PRICE IN POOLS SHIMMERSEA:
-          <h4>
-            vUSD Price = {pools.length > 0 ? pools[1].price : <p>Loading Price</p>} USD
-          </h4>
-          <h6>
-            Pool Capitalization in USD: {pools.length > 0 ? pools[1].capitalization : <p>Loading Cap</p>} USD   -----  
-            Pool Dominance in Market: {pools.length > 0 ? pools[1].dominance : <p>Loading Dom</p>}%
-            <p>Pool Balances: [{pools.length > 0 ? pools[1].wsmrBalance : <p> </p>} wSMR, {pools.length > 0 ? pools[1].vusddBalance : <p> </p>} vUSD] </p>
-          </h6>
-          <h6>
-            <a
-              className="App-link"
-              href="https://www.google.com"
-              target="_blank"
-              rel="wSMRv/VUSD Pool in POOLS"
-            >
-              wSMRv/VUSD Pool in ShimmerSea
-            </a>
-          </h6>
+          <div class="container">
+            <div class="column">
+              <h4>
+              Pool1: wSMR/vUSD
+              </h4>
+            </div>
+            <div class="column">
+              <h3>
+              vUSD Price = {pools.length > 0 ? pools[2].price : <p>Loading Price</p>} USD
+              </h3>
+            </div>
+            <div class="column">
+              <h6>
+                <p> Pool Capitalization in USD: {pools.length > 0 ? pools[2].capitalization : <p>Loading Cap</p>} USD  </p>
+                <p> Pool Dominance in Market: {pools.length > 0 ? pools[2].dominance : <p>Loading Dom</p>}%  </p>
+                <p> Pool Balances: [{pools.length > 0 ? pools[2].wsmrBalance : <p> </p>} wSMR, {pools.length > 0 ? pools[2].vusddBalance : <p> </p>} vUSD] </p>
+                <a
+                  className="App-link"
+                  href="https://pools-frontend-v2-diss-nakama.vercel.app/pool/0xd04978fce521e644ebddaa1aabcad6d36b518d34000200000000000000000005"
+                  target="_blank"
+                  rel="wSMRv/VUSD Pool in SHIMMERSEA"
+                >
+                  wSMRv/VUSD Pool in POOLS
+                </a>
+              </h6>
+            </div>
+          </div>
+          <div class="container">
+            <div class="column">
+              <h4>
+              Pool2: USDT/vUSD
+              </h4>
+            </div>
+            <div class="column">
+              <h3>
+              vUSD Price = {pools.length > 0 ? pools[3].price : <p>Loading Price</p>} USD
+              </h3>
+            </div>
+            <div class="column">
+              <h6>
+                <p> Pool Capitalization in USD: {pools.length > 0 ? pools[3].capitalization : <p>Loading Cap</p>} USD  </p>
+                <p> Pool Dominance in Market: {pools.length > 0 ? pools[3].dominance : <p>Loading Dom</p>}%  </p>
+                <p> Pool Balances: [{pools.length > 0 ? pools[3].wsmrBalance : <p> </p>} wSMR, {pools.length > 0 ? pools[3].vusddBalance : <p> </p>} vUSD] </p>
+                <a
+                  className="App-link"
+                  href="https://pools-frontend-v2-diss-nakama.vercel.app/pool/0xd04978fce521e644ebddaa1aabcad6d36b518d34000200000000000000000005"
+                  target="_blank"
+                  rel="USDT/VUSD Pool in SHIMMERSEA"
+                >
+                  USDT/VUSD Pool in POOLS
+                </a>
+              </h6>
+            </div>
+          </div>
         </p>
       </header>
     </div>
