@@ -250,7 +250,7 @@ function App() {
                   target="_blank"
                   rel="wSMRv/vUSD Pool in SHIMMERSEA"
                 >
-                  wSMRv/vUSD Pool in POOLS
+                  wSMRv/vUSD Pool in SHIMMERSEA
                 </a>
               </h6>
             </div>
