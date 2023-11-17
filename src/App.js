@@ -144,38 +144,41 @@ function App() {
             for the token cotization{" "}
           </h6>
         </p>
-
         <p>
           <img src="logoShimmersea.jpeg" width="40" height="40" />
           -- ShimmerSea PLATFORM: --
           <img src="logoShimmersea.jpeg" width="40" height="40" />{" "}
-          <div class="container">
-            <div class="column">
-              <h4>Pool Name</h4>
+        </p>
+        <p>
+          <div className="table-container">
+            <div class="container">
+              <div class="column">
+                <h4>Pool Name</h4>
+              </div>
+              <div class="column">
+                <h4>Token 0</h4>
+              </div>
+              <div class="column">
+                <h4>Token 1</h4>
+              </div>
+              <div class="column">
+                <h4>Token0/Token1</h4>
+              </div>
+              <div class="column">
+                <h4>Token1/Token0</h4>
+              </div>
+              <div class="column">
+                <h4>Pool Balances</h4>
+              </div>
             </div>
-            <div class="column">
-              <h4>Token 0</h4>
-            </div>
-            <div class="column">
-              <h4>Token 1</h4>
-            </div>
-            <div class="column">
-              <h4>Token0/Token1</h4>
-            </div>
-            <div class="column">
-              <h4>Token1/Token0</h4>
-            </div>
-            <div class="column">
-              <h4>Pool Balances</h4>
-            </div>
+            {(() => {
+              const rows = [];
+              for (let i = 0; i < shimmerseaPoolAddresses.length; i++) {
+                rows.push(addRow(pools[i]));
+              }
+              return rows;
+            })()}
           </div>
-          {(() => {
-            const rows = [];
-            for (let i = 0; i < shimmerseaPoolAddresses.length; i++) {
-              rows.push(addRow(pools[i]));
-            }
-            return rows;
-          })()}
         </p>
       </header>
     </div>

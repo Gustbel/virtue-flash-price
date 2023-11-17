@@ -12,13 +12,25 @@ code {
     monospace;
 }
 
+.table-container {
+  overflow-x: auto; /* Enable horizontal scrolling */
+  background-color: #2e2e2e; /* Set your desired background color */
+}
+
 .container {
   display: flex;
-  justify-content: space-between;
 }
 
 .column {
   flex: 1;
   text-align: center;
   border: 1px solid #ccc; /* Optional: Add a border for better visualization */
+  padding: 8px; /* Add some padding for better spacing */
+}
+
+/* Media queries for responsive design */
+@media (max-width: 768px) {
+  .column {
+    flex-basis: 100%; /* Make columns take up full width on smaller screens */
+  }
 }
