@@ -21,6 +21,7 @@ const shimmerseaPoolAddresses = [
   "0x9c7Bf87CEC82Ce93475c6a51593101402A3054e0",
   "0x65a8c0a10b265843487dfde2925e11e467eed727",
 ];
+let poolUrls = [];
 
 // Object definition
 function Pool(symbol0, symbol1, cotiz0, cotiz1, balance0, balance1) {
@@ -45,6 +46,9 @@ function App() {
   let emptyPoolsAmount = [];
   for (let i = 0; i < shimmerseaPoolAddresses.length; i++) {
     emptyPoolsAmount.push(emptyPool);
+    poolUrls.push(
+      `https://explorer.evm.testnet.shimmer.network/address/${shimmerseaPoolAddresses[i]}`
+    );
   }
 
   const [pools, setPools] = useState(emptyPoolsAmount);
@@ -182,7 +186,11 @@ function addRow(pool) {
   return (
     <div class="container">
       <div class="column">
-        <h4>Pool: {pool.symbol0 + "/" + pool.symbol1}</h4>
+        <h4>
+          <a className="App-link" href={poolUrls} target="_blank">
+            Pool: {pool.symbol0 + "/" + pool.symbol1}
+          </a>
+        </h4>
       </div>
       <div class="column">
         <h5>{pool.symbol0}</h5>
