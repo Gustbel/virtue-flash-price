@@ -174,7 +174,7 @@ function App() {
             {(() => {
               const rows = [];
               for (let i = 0; i < shimmerseaPoolAddresses.length; i++) {
-                rows.push(addRow(pools[i]));
+                rows.push(addRow(i, pools[i]));
               }
               return rows;
             })()}
@@ -185,12 +185,12 @@ function App() {
   );
 }
 
-function addRow(pool) {
+function addRow(id, pool) {
   return (
     <div class="container">
       <div class="column">
         <h4>
-          <a className="App-link" href={poolUrls} target="_blank">
+          <a className="App-link" href={poolUrls[id]} target="_blank">
             Pool: {pool.symbol0 + "/" + pool.symbol1}
           </a>
         </h4>
