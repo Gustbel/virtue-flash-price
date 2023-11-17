@@ -1,53 +1,63 @@
-import './App.css';
-import {useEffect, useState} from 'react';
-import { ethers, JsonRpcProvider, utils } from 'ethers';
-const vaultAbi = require('./abi/vault.json');
-const tangleseaPairAbi = require('./abi/tangleseaPair.json');
+import "./App.css";
+import { useEffect, useState } from "react";
+import { ethers, JsonRpcProvider, utils } from "ethers";
+const vaultAbi = require("./abi/vault.json");
+const tangleseaPairAbi = require("./abi/tangleseaPair.json");
+const erc20Abi = require("./abi/erc20.json");
 
-
-const wsmrPrice = 0.05
-const usdtPrice = 1.02
+const wsmrPrice = 0.05;
+const usdtPrice = 1.02;
 
 // POOLS
-const vaultAddress = "0x8021c957a0FF43ee4aF585D10a14bD14C30b89F7"
-const pool1Id = "0x4bfd8353eddf067588d3a48389fcdbe3777f9ba4000200000000000000000008"
-const pool2Id = '0xc800de05df867e81fcb3fddd16baf0ce4db64b70000000000000000000000009'
+//const vaultAddress = "0x8021c957a0FF43ee4aF585D10a14bD14C30b89F7"
+//const pool1Id = "0x4bfd8353eddf067588d3a48389fcdbe3777f9ba4000200000000000000000008"
+//const pool2Id = '0xc800de05df867e81fcb3fddd16baf0ce4db64b70000000000000000000000009'
 
 // SHIMMERSEA
-//const shimmerSeaPool1Address = "0x4e924F6a6AC5452D6E1cB08818Fb103Fd0328eb0"
-//const shimmerSeaPool2Address = "0xA27BEcBC6098363cB9784f41F001D74604fa75b1"
+const shimmerseaPoolAddresses = [
+  "0x0af76ee2abe985f027292cef69f1f3a83c80b4da",
+  "0x008ee1c349a657adf4b2da5210e67d0e4539ca89",
+  "0xbd3b301d09f195ae9271b74c3eafe50ea8d7dda2",
+  "0x9c7Bf87CEC82Ce93475c6a51593101402A3054e0",
+  "0x65a8c0a10b265843487dfde2925e11e467eed727",
+];
 
 // Object definition
-function Pool(price, collatTokenBalance, vusdBalance, capitalization, dominance) {
-  this.price = price;
-  this.collatTokenBalance = collatTokenBalance;
-  this.vusdBalance = vusdBalance;
-  this.capitalization = capitalization;
-  this.dominance = dominance;
+function Pool(symbol0, symbol1, cotiz0, cotiz1, balance0, balance1) {
+  this.symbol0 = symbol0;
+  this.symbol1 = symbol1;
+  this.cotiz0 = cotiz0;
+  this.cotiz1 = cotiz1;
+  this.balance0 = balance0;
+  this.balance1 = balance1;
 }
 
 var poolArray = [];
 
 // Function to add a new instance of XYZ to the array
-function addPool(price, collatTokenBalance, vusdBalance, capitalization, dominance) {
-  var newPool = new Pool(price, collatTokenBalance, vusdBalance, capitalization, dominance);
+function addPool(symbol0, symbol1, cotiz0, cotiz1, balance0, balance1) {
+  var newPool = new Pool(symbol0, symbol1, cotiz0, cotiz1, balance0, balance1);
   poolArray.push(newPool);
 }
-
+var emptyPool = new Pool("...", "...", "...", "...", "...", "...");
 
 function App() {
-  const [pools, setPools] = useState([]);
-  const [generalPrice, setGeneralPrice] = useState();
-  const [totalVusd, setTotalVusd] = useState();
+  let emptyPoolsAmount = [];
+  for (let i = 0; i < shimmerseaPoolAddresses.length; i++) {
+    emptyPoolsAmount.push(emptyPool);
+  }
 
+  const [pools, setPools] = useState(emptyPoolsAmount);
 
   useEffect(() => {
     async function setPrices() {
-      const provider = new JsonRpcProvider('https://json-rpc.evm.testnet.shimmer.network');
+      const provider = new JsonRpcProvider(
+        "https://json-rpc.evm.testnet.shimmer.network"
+      );
 
       // Set Pool Array to empty
       poolArray = [];
-
+      /*
       // Get price from Pools
       const vault = new ethers.Contract(vaultAddress, vaultAbi, provider);
       // Pool1
@@ -64,237 +74,132 @@ function App() {
       poolCotization = pool2PoolsUsdtBalance/pool2PoolsVusdBalance
       const pool2PoolsVusdPrice = poolCotization * usdtPrice
       const pool2PoolsCap = pool2PoolsUsdtBalance * usdtPrice + pool2PoolsVusdBalance * pool2PoolsVusdPrice
+*/
 
-      /*
       // Get price from ShimmerSea
       // Pool1
-      const shimmerSeaPool1 = new ethers.Contract(shimmerSeaPool1Address, tangleseaPairAbi, provider);
-      const pool1SseaRawInfo = await shimmerSeaPool1.getReserves()
-      const pool1SseaWsmrBalance = Number(ethers.formatUnits(String(pool1SseaRawInfo[0]), 18))
-      const pool1SseaVusdBalance = Number(ethers.formatUnits(String(pool1SseaRawInfo[1]), 18))
-      poolCotization = pool1SseaWsmrBalance/pool1SseaVusdBalance
-      const pool1SseaVusdPrice = poolCotization * wsmrPrice
-      const pool1SseaCap = pool1SseaWsmrBalance * wsmrPrice + pool1SseaVusdBalance * pool1SseaVusdPrice
-      // Pool2
-      const shimmerSeaPool2 = new ethers.Contract(shimmerSeaPool2Address, tangleseaPairAbi, provider);
-      const pool2SseaRawInfo = await shimmerSeaPool2.getReserves()
-      const pool2SseaUsdtBalance = Number(ethers.formatUnits(String(pool2SseaRawInfo[0]), 6))
-      const pool2SseaVusdBalance = Number(ethers.formatUnits(String(pool2SseaRawInfo[1]), 18))
-      poolCotization = pool2SseaUsdtBalance/pool2SseaVusdBalance
-      const pool2SseaVusdPrice = poolCotization * usdtPrice
-      const pool2SseaCap = pool2SseaUsdtBalance * usdtPrice + pool2SseaVusdBalance * pool2SseaVusdPrice
-      */
 
-      // Dominance calculation
-      // temporal
-      const pool1SseaCap = 0
-      const pool2SseaCap = 0
-      const pool1SseaVusdPrice = 0
-      const pool2SseaVusdPrice = 0
-      const pool1SseaVusdBalance = 0
-      const pool2SseaVusdBalance = 0
-      /////////
+      for (let i = 0; i < shimmerseaPoolAddresses.length; i++) {
+        const shimmerSeaPool = new ethers.Contract(
+          shimmerseaPoolAddresses[i],
+          tangleseaPairAbi,
+          provider
+        );
+        const poolSseaRawInfo = await shimmerSeaPool.getReserves();
+        let poolSseaBalances = [];
+        let poolTokensData = [[], []];
+        poolTokensData[0].push(await shimmerSeaPool.token0());
+        poolTokensData[1].push(await shimmerSeaPool.token1());
+        for (let i = 0; i < 2; i++) {
+          const erc20 = new ethers.Contract(
+            poolTokensData[i][0],
+            erc20Abi,
+            provider
+          );
+          poolTokensData[i].push(await erc20.symbol());
+          poolTokensData[i].push(Number(await erc20.decimals()));
 
-      const marketCap = pool1PoolsCap + pool2PoolsCap + pool1SseaCap + pool2SseaCap
-      const pool1PoolsDominance = pool1PoolsCap / marketCap
-      const pool2PoolsDominance = pool2PoolsCap / marketCap
-      const pool1SseaDominance = pool1SseaCap /marketCap
-      const pool2SseaDominance = pool2SseaCap /marketCap
+          // Save Pool Balances and cotizations
+          poolSseaBalances.push(
+            Number(
+              ethers.formatUnits(
+                String(poolSseaRawInfo[i]),
+                poolTokensData[i][2]
+              )
+            )
+          );
+        }
 
-      // Final Price
-      const ponderatedPrice = 
-            (pool1PoolsVusdPrice * pool1PoolsDominance) +
-            (pool2PoolsVusdPrice * pool2PoolsDominance) +
-            (pool1SseaVusdPrice * pool1SseaDominance) +
-            (pool2SseaVusdPrice * pool2SseaDominance)
+        let poolCotizations = [];
+        poolCotizations.push(poolSseaBalances[0] / poolSseaBalances[1]);
+        poolCotizations.push(poolSseaBalances[1] / poolSseaBalances[0]);
 
-      const totalVusdInPools = 
-              pool1PoolsVusdBalance + 
-              pool2PoolsVusdBalance +
-              pool1SseaVusdBalance +
-              pool2SseaVusdBalance
+        addPool(
+          poolTokensData[0][1],
+          poolTokensData[1][1],
+          poolCotizations[0].toFixed(6),
+          poolCotizations[1].toFixed(6),
+          poolSseaBalances[0].toFixed(0),
+          poolSseaBalances[1].toFixed(0)
+        );
+      }
 
-      addPool(
-        pool1PoolsVusdPrice.toFixed(5), 
-        pool1PoolsWsmrBalance.toFixed(0), 
-        pool1PoolsVusdBalance.toFixed(0), 
-        pool1PoolsCap.toFixed(0), 
-        (pool1PoolsDominance * 100).toFixed(2)
-      )
-      addPool(
-        pool2PoolsVusdPrice.toFixed(5), 
-        pool2PoolsUsdtBalance.toFixed(0), 
-        pool2PoolsVusdBalance.toFixed(0), 
-        pool2PoolsCap.toFixed(0), 
-        (pool2PoolsDominance * 100).toFixed(2)
-      )
-      addPool(
-        "...",
-        "...",
-        "...",
-        "...",
-        "...",
-      )
-      addPool(
-        "...",
-        "...",
-        "...",
-        "...",
-        "...",
-      )
-      setPools(poolArray)
-
-      setGeneralPrice(ponderatedPrice.toFixed(5))
-      setTotalVusd(totalVusdInPools.toFixed(0))
+      setPools(poolArray);
     }
     setPrices();
   }, []);
-
-
 
   return (
     <div className="App">
       <header className="App-header">
         <p>
-          <h1>
-            vUSD PRICE IN USD
-          </h1>
-          <img src="logoVirtue.png" alt="Virtue Logo" width="120" height="40"/>
-          <h2>
-            vUSD PRICE = {generalPrice} USD*
-          </h2>
-          <h5>
-            Total vUSD in Market pools --&gt; {totalVusd} vUSD = {(totalVusd * generalPrice).toFixed(0)} USD
-          </h5>
+          <h1>Tokens Pool Details </h1>
           <h6>
-            * Composition of the price obtained from Pools and ShimmerSea pools and their weighting by their capitalizations. <br></br> 
-            Note: The reference with USD DOLLAR is made with the HARCODED Price of WSMR = 0.05 USD
+            Balances obtained from ShimmerSea Testnet - NOTE: Its not used
+            `getAmountsIn` or `getAmountsOut`, we only use Pool balances here
+            for the token cotization{" "}
           </h6>
         </p>
 
         <p>
-            <img src="logoPools.png" alt="Pools Logo" width="40" height="40" />
-            -- PRICE IN POOLS PLATFORM: -- 
-            <img src="logoPools.png" alt="Pools Logo" width="40" height="40" />
-            
+          <img src="logoShimmersea.jpeg" width="40" height="40" />
+          -- ShimmerSea PLATFORM: --
+          <img src="logoShimmersea.jpeg" width="40" height="40" />{" "}
           <div class="container">
             <div class="column">
-              <h4>
-              Pool1: wSMR/vUSD
-              </h4>
+              <h4>Pool Name</h4>
             </div>
             <div class="column">
-              <h3>
-              vUSD Price = {pools.length > 0 ? pools[0].price : <p>Loading Price</p>} USD
-              </h3>
+              <h4>Token 0</h4>
             </div>
             <div class="column">
-              <h6>
-                <p> Pool Capitalization in USD: {pools.length > 0 ? pools[0].capitalization : <p>Loading Cap</p>} USD  </p>
-                <p> Pool Dominance in Market: {pools.length > 0 ? pools[0].dominance : <p>Loading Dom</p>}%  </p>
-                <p> Pool Balances: [{pools.length > 0 ? pools[0].collatTokenBalance : <p> </p>} wSMR, {pools.length > 0 ? pools[0].vusdBalance : <p> </p>} vUSD] </p>
-                <a
-                  className="App-link"
-                  href="https://pools-frontend-v2-diss-nakama.vercel.app/pool/0xd04978fce521e644ebddaa1aabcad6d36b518d34000200000000000000000005"
-                  target="_blank"
-                  rel="wSMRv/vUSD Pool in POOLS"
-                >
-                  wSMRv/vUSD Pool in POOLS
-                </a>
-                (connect MM to see the pool)
-              </h6>
+              <h4>Token 1</h4>
+            </div>
+            <div class="column">
+              <h4>Token0/Token1</h4>
+            </div>
+            <div class="column">
+              <h4>Token1/Token0</h4>
+            </div>
+            <div class="column">
+              <h4>Pool Balances</h4>
             </div>
           </div>
-          <div class="container">
-            <div class="column">
-              <h4>
-              Pool2: USDT/vUSD
-              </h4>
-            </div>
-            <div class="column">
-              <h3>
-              vUSD Price = {pools.length > 0 ? pools[1].price : <p>Loading Price</p>} USD
-              </h3>
-            </div>
-            <div class="column">
-              <h6>
-                <p> Pool Capitalization in USD: {pools.length > 0 ? pools[1].capitalization : <p>Loading Cap</p>} USD  </p>
-                <p> Pool Dominance in Market: {pools.length > 0 ? pools[1].dominance : <p>Loading Dom</p>}%  </p>
-                <p> Pool Balances: [{pools.length > 0 ? pools[1].collatTokenBalance : <p> </p>} USDT, {pools.length > 0 ? pools[1].vusdBalance : <p> </p>} vUSD] </p>
-                <a
-                  className="App-link"
-                  href="https://pools-frontend-v2-diss-nakama.vercel.app/pool/0xcd0840650045bf8773e290b67ba6169e28c7b703000000000000000000000007"
-                  target="_blank"
-                  rel="USDT/vUSD Pool in POOLS"
-                >
-                  USDT/vUSD Pool in POOLS
-                </a>
-                (connect MM to see the pool)
-              </h6>
-            </div>
-          </div>
-        </p>
-
-        <p>
-            <img src="logoShimmersea.jpeg" alt="Pools Shimmersea" width="40" height="40" />
-              -- PRICE IN POOLS SHIMMERSEA: -- 
-            <img src="logoShimmersea.jpeg" alt="Pools Shimmersea" width="40" height="40" />
-          <div class="container">
-            <div class="column">
-              <h4>
-              Pool1: wSMR/vUSD
-              </h4>
-            </div>
-            <div class="column">
-              <h3>
-              vUSD Price = {pools.length > 0 ? pools[2].price : <p>Loading Price</p>} USD
-              </h3>
-            </div>
-            <div class="column">
-              <h6>
-                <p> Pool Capitalization in USD: {pools.length > 0 ? pools[2].capitalization : <p>Loading Cap</p>} USD  </p>
-                <p> Pool Dominance in Market: {pools.length > 0 ? pools[2].dominance : <p>Loading Dom</p>}%  </p>
-                <p> Pool Balances: [{pools.length > 0 ? pools[2].collatTokenBalance : <p> </p>} wSMR, {pools.length > 0 ? pools[2].vusdBalance : <p> </p>} vUSD] </p>
-                <a
-                  className="App-link"
-                  href="https://shimmersea.finance/swap"
-                  target="_blank"
-                  rel="wSMRv/vUSD Pool in SHIMMERSEA"
-                >
-                  wSMRv/vUSD Pool in SHIMMERSEA
-                </a>
-              </h6>
-            </div>
-          </div>
-          <div class="container">
-            <div class="column">
-              <h4>
-              Pool2: USDT/vUSD
-              </h4>
-            </div>
-            <div class="column">
-              <h3>
-              vUSD Price = {pools.length > 0 ? pools[3].price : <p>Loading Price</p>} USD
-              </h3>
-            </div>
-            <div class="column">
-              <h6>
-                <p> Pool Capitalization in USD: {pools.length > 0 ? pools[3].capitalization : <p>Loading Cap</p>} USD  </p>
-                <p> Pool Dominance in Market: {pools.length > 0 ? pools[3].dominance : <p>Loading Dom</p>}%  </p>
-                <p> Pool Balances: [{pools.length > 0 ? pools[3].collatTokenBalance : <p> </p>} USDT, {pools.length > 0 ? pools[3].vusdBalance : <p> </p>} vUSD] </p>
-                <a
-                  className="App-link"
-                  href="https://shimmersea.finance/swap"
-                  target="_blank"
-                  rel="USDT/vUSD Pool in SHIMMERSEA"
-                >
-                  USDT/vUSD Pool in SHIMMERSEA
-                </a>
-              </h6>
-            </div>
-          </div>
+          {(() => {
+            const rows = [];
+            for (let i = 0; i < shimmerseaPoolAddresses.length; i++) {
+              rows.push(addRow(pools[i]));
+            }
+            return rows;
+          })()}
         </p>
       </header>
+    </div>
+  );
+}
+
+function addRow(pool) {
+  return (
+    <div class="container">
+      <div class="column">
+        <h4>Pool: {pool.symbol0 + "/" + pool.symbol1}</h4>
+      </div>
+      <div class="column">
+        <h5>{pool.symbol0}</h5>
+      </div>
+      <div class="column">
+        <h5>{pool.symbol1}</h5>
+      </div>
+      <div class="column">
+        <h5>{pool.cotiz0}</h5>
+      </div>
+      <div class="column">
+        <h5>{pool.cotiz1}</h5>
+      </div>
+      <div class="column">
+        <h5>Tok1: {pool.balance0}</h5>
+        <h5>Tok2: {pool.balance1}</h5>
+      </div>
     </div>
   );
 }
