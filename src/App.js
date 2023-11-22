@@ -208,8 +208,8 @@ function addRow(id, pool) {
         <h5>{pool.cotiz1}</h5>
       </div>
       <div class="column">
-        <h5>Tok1: {pool.balance0}</h5>
-        <h5>Tok2: {pool.balance1}</h5>
+        <h5>Tok0: {pool.balance0}</h5>
+        <h5>Tok1: {pool.balance1}</h5>
       </div>
     </div>
   );
