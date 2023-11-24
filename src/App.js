@@ -37,7 +37,7 @@ function Pool(symbol0, symbol1, cotiz0, cotiz1, balance0, balance1) {
 var poolArray = [];
 
 // Function to add a new instance of XYZ to the array
-function addPool(index, symbol0, symbol1, cotiz0, cotiz1, balance0, balance1) {
+function addPool(symbol0, symbol1, cotiz0, cotiz1, balance0, balance1) {
   var newPool = new Pool(symbol0, symbol1, cotiz0, cotiz1, balance0, balance1);
   poolArray.push(newPool);
 }
@@ -78,14 +78,8 @@ function App() {
 */
 
       // Get price from ShimmerSea
-      // Pool1
-
-      /* for (let i = 0; i < shimmerseaPoolAddresses.length; i++) {
-        await getShimmerSeaPoolData(shimmerseaPoolAddresses[i]);
-      }*/
-
-      const promises = shimmerseaPoolAddresses.map((address, index) => {
-        return getShimmerSeaPoolData(index, address);
+      const promises = shimmerseaPoolAddresses.map((address) => {
+        return getShimmerSeaPoolData(address);
       });
 
       try {
@@ -100,7 +94,7 @@ function App() {
     setPrices();
   }, []);
 
-  async function getShimmerSeaPoolData(index, poolAddress) {
+  async function getShimmerSeaPoolData(poolAddress) {
     const shimmerSeaPool = new ethers.Contract(
       poolAddress,
       tangleseaPairAbi,
@@ -133,7 +127,6 @@ function App() {
     poolCotizations.push(poolSseaBalances[1] / poolSseaBalances[0]);
 
     addPool(
-      index,
       poolTokensData[0][1],
       poolTokensData[1][1],
       poolCotizations[0].toFixed(6),
