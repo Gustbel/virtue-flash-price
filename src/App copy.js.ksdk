@@ -39,12 +39,13 @@ var poolArray = [];
 // Function to add a new instance of XYZ to the array
 function addPool(index, symbol0, symbol1, cotiz0, cotiz1, balance0, balance1) {
   var newPool = new Pool(symbol0, symbol1, cotiz0, cotiz1, balance0, balance1);
-  poolArray.push(newPool);
+  poolArray[index] = newPool;
 }
 var emptyPool = new Pool("...", "...", "...", "...", "...", "...");
 
 function App() {
   let emptyPoolsAmount = [];
+
   for (let i = 0; i < shimmerseaPoolAddresses.length; i++) {
     emptyPoolsAmount.push(emptyPool);
     poolUrls.push(
@@ -78,12 +79,7 @@ function App() {
 */
 
       // Get price from ShimmerSea
-      // Pool1
-
-      /* for (let i = 0; i < shimmerseaPoolAddresses.length; i++) {
-        await getShimmerSeaPoolData(shimmerseaPoolAddresses[i]);
-      }*/
-
+      // Run promises
       const promises = shimmerseaPoolAddresses.map((address, index) => {
         return getShimmerSeaPoolData(index, address);
       });
