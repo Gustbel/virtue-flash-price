@@ -10,18 +10,21 @@ const provider = new JsonRpcProvider(
 );
 
 // POOLS
-//const vaultAddress = "0x8021c957a0FF43ee4aF585D10a14bD14C30b89F7"
-//const pool1Id = "0x4bfd8353eddf067588d3a48389fcdbe3777f9ba4000200000000000000000008"
-//const pool2Id = '0xc800de05df867e81fcb3fddd16baf0ce4db64b70000000000000000000000009'
+const vaultAddress = "0x407fE48269ae4E3ce21bB650B7f642439299a4d5";
 
 // SHIMMERSEA
 const shimmerseaPoolAddresses = [
   "0x0af76ee2abe985f027292cef69f1f3a83c80b4da",
   "0x008ee1c349a657adf4b2da5210e67d0e4539ca89",
   "0xbd3b301d09f195ae9271b74c3eafe50ea8d7dda2",
-  "0x9c7Bf87CEC82Ce93475c6a51593101402A3054e0",
-  "0x65a8c0a10b265843487dfde2925e11e467eed727",
 ];
+// POOLS
+const poolsPoolAddresses = [
+  "0xd109f469d9cc76e6b7be41e2c701a875b14f6b44000200000000000000000005",
+  "0x8ddcac03933722e257bf59680bc4bde4e9d7d68c000200000000000000000004",
+  "0xc1d362c4427237ccae906433ff627fb50bf02c7c000200000000000000000006",
+];
+
 let poolUrls = [];
 
 // Object definition
@@ -45,7 +48,11 @@ var emptyPool = new Pool("...", "...", "...", "...", "...", "...");
 
 function App() {
   let emptyPoolsAmount = [];
-  for (let i = 0; i < shimmerseaPoolAddresses.length; i++) {
+  for (
+    let i = 0;
+    i < shimmerseaPoolAddresses.length + poolsPoolAddresses.length;
+    i++
+  ) {
     emptyPoolsAmount.push(emptyPool);
     poolUrls.push(
       `https://explorer.evm.testnet.shimmer.network/address/${shimmerseaPoolAddresses[i]}`
@@ -58,29 +65,17 @@ function App() {
     async function setPrices() {
       // Set Pool Array to empty
       poolArray = [];
-      /*
-      // Get price from Pools
-      const vault = new ethers.Contract(vaultAddress, vaultAbi, provider);
-      // Pool1
-      const pool1PoolsRawInfo = await vault.getPoolTokens(pool1Id);
-      const pool1PoolsWsmrBalance = Number(ethers.formatUnits(String(pool1PoolsRawInfo[1][0]), 18))
-      const pool1PoolsVusdBalance = Number(ethers.formatUnits(String(pool1PoolsRawInfo[1][1]), 18))
-      let poolCotization = pool1PoolsWsmrBalance/pool1PoolsVusdBalance
-      const pool1PoolsVusdPrice = poolCotization * wsmrPrice
-      const pool1PoolsCap = pool1PoolsWsmrBalance * wsmrPrice + pool1PoolsVusdBalance * pool1PoolsVusdPrice
-      // Pool2
-      const pool2PoolsRawInfo = await vault.getPoolTokens(pool2Id);
-      const pool2PoolsUsdtBalance = Number(ethers.formatUnits(String(pool2PoolsRawInfo[1][0]), 6))
-      const pool2PoolsVusdBalance = Number(ethers.formatUnits(String(pool2PoolsRawInfo[1][1]), 18))
-      poolCotization = pool2PoolsUsdtBalance/pool2PoolsVusdBalance
-      const pool2PoolsVusdPrice = poolCotization * usdtPrice
-      const pool2PoolsCap = pool2PoolsUsdtBalance * usdtPrice + pool2PoolsVusdBalance * pool2PoolsVusdPrice
-*/
 
       // Get price from ShimmerSea
-      const promises = shimmerseaPoolAddresses.map((address) => {
+      const promisesShimmersea = shimmerseaPoolAddresses.map((address) => {
         return getShimmerSeaPoolData(address);
       });
+      // Get Prices from Pools
+      const promisesPools = poolsPoolAddresses.map((address) => {
+        return getPoolsPoolData(address);
+      });
+
+      const promises = promisesShimmersea.concat(promisesPools);
 
       try {
         const results = await Promise.all(promises);
@@ -93,6 +88,50 @@ function App() {
     }
     setPrices();
   }, []);
+
+  async function getPoolsPoolData(poolId) {
+    // Instance Vault contract
+    const vault = new ethers.Contract(vaultAddress, vaultAbi, provider);
+
+    const poolPoolsRawInfo = await vault.getPoolTokens(poolId);
+
+    let poolPoolsBalances = [];
+    let poolTokensData = [[], []];
+    poolTokensData[0].push(await poolPoolsRawInfo[0][0]);
+    poolTokensData[1].push(await poolPoolsRawInfo[0][1]);
+    for (let i = 0; i < 2; i++) {
+      const erc20 = new ethers.Contract(
+        poolTokensData[i][0],
+        erc20Abi,
+        provider
+      );
+      poolTokensData[i].push(await erc20.symbol());
+      poolTokensData[i].push(Number(await erc20.decimals()));
+
+      // Save Pool Balances and cotizations
+      poolPoolsBalances.push(
+        Number(
+          ethers.formatUnits(
+            String(poolPoolsRawInfo[1][i]),
+            poolTokensData[i][2]
+          )
+        )
+      );
+    }
+
+    let poolCotizations = [];
+    poolCotizations.push(poolPoolsBalances[0] / poolPoolsBalances[1]);
+    poolCotizations.push(poolPoolsBalances[1] / poolPoolsBalances[0]);
+
+    addPool(
+      poolTokensData[0][1],
+      poolTokensData[1][1],
+      poolCotizations[0].toFixed(6),
+      poolCotizations[1].toFixed(6),
+      poolPoolsBalances[0].toFixed(0),
+      poolPoolsBalances[1].toFixed(0)
+    );
+  }
 
   async function getShimmerSeaPoolData(poolAddress) {
     const shimmerSeaPool = new ethers.Contract(
@@ -177,6 +216,22 @@ function App() {
             {(() => {
               const rows = [];
               for (let i = 0; i < shimmerseaPoolAddresses.length; i++) {
+                rows.push(addRow(i, pools[i]));
+              }
+              return rows;
+            })()}
+            <p>
+              <img src="logoPools.png" width="40" height="40" />
+              -- Pools PLATFORM: --
+              <img src="logoPools.png" width="40" height="40" />{" "}
+            </p>
+            {(() => {
+              const rows = [];
+              for (
+                let i = shimmerseaPoolAddresses.length;
+                i < shimmerseaPoolAddresses.length + poolsPoolAddresses.length;
+                i++
+              ) {
                 rows.push(addRow(i, pools[i]));
               }
               return rows;
